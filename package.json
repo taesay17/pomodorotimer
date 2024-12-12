@@ -2,5 +2,8 @@
   "dependencies": {
     "chart.js": "^4.4.7",
     "react-chartjs-2": "^5.2.0"
+  },
+  "devDependencies": {
+    "gh-pages": "^6.2.0"
   }
 }

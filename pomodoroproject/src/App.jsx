@@ -2,17 +2,15 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 
 function PomodoroTimer() {
-  const [workTime, setWorkTime] = useState(25 * 60); // Work time in seconds
-  const [breakTime, setBreakTime] = useState(5 * 60); // Break time in seconds
-  const [time, setTime] = useState(workTime); // Current timer time
-  const [isActive, setIsActive] = useState(false); // Is the timer active
-  const [sessionCount, setSessionCount] = useState(0); // Session counter
-  const [isBreak, setIsBreak] = useState(false); // Is it break time?
-  const [showModal, setShowModal] = useState(false); // Show modal for confirmation
+  const [workTime, setWorkTime] = useState(25 * 60); 
+  const [breakTime, setBreakTime] = useState(5 * 60); 
+  const [time, setTime] = useState(workTime);
+  const [isActive, setIsActive] = useState(false); 
+  const [sessionCount, setSessionCount] = useState(0); 
+  const [isBreak, setIsBreak] = useState(false);
+  const [showModal, setShowModal] = useState(false); 
 
-  // Обновляем таймер каждый раз, когда workTime или breakTime изменяются
   useEffect(() => {
-    // Если не активен таймер, то не меняем time
     if (!isActive) {
       setTime(isBreak ? breakTime : workTime);
     }
@@ -28,16 +26,15 @@ function PomodoroTimer() {
       clearInterval(interval);
     }
 
-    // Когда время заканчивается
     if (time <= 0) {
       if (isBreak) {
-        setIsBreak(false); // Переключаем на рабочий таймер
-        setSessionCount(prev => prev + 1); // Увеличиваем счетчик сессий
-        setTime(workTime); // Сбрасываем на рабочее время
+        setIsBreak(false); 
+        setSessionCount(prev => prev + 1);
+        setTime(workTime);
         showNotification('Break time is over! Time to work!');
       } else {
-        setIsBreak(true); // Переключаем на перерыв
-        setTime(breakTime); // Сбрасываем на перерыв
+        setIsBreak(true); 
+        setTime(breakTime);
         showNotification('Work time is over! Time for a break!');
       }
     }
@@ -45,25 +42,20 @@ function PomodoroTimer() {
     return () => clearInterval(interval);
   }, [isActive, time, isBreak, workTime, breakTime]);
 
-  // Показываем уведомление с звуком
   const showNotification = (message) => {
     if (Notification.permission === 'granted') {
       new Notification(message);
     }
 
-    // Проигрываем звук
     const audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
     audio.play();
 
-    // Показываем модальное окно для подтверждения
     setShowModal(true);
   };
 
-  // Закрываем модальное окно
   const handleModalResponse = (response) => {
     setShowModal(false);
     if (response === 'confirm') {
-      // Выполняем действия, если пользователь подтвердил
       console.log('User confirmed the session ended.');
     } else {
       console.log('User dismissed the session end.');

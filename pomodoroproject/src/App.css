@@ -1,0 +1,115 @@
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
+  background-color: #f8f8f8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.timer-container {
+  width: 500px;
+  padding: 30px;
+  background-color: #fff8f0;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  color: #333;
+}
+
+h1 {
+  font-size: 2.5rem;
+  color: #ff6347;
+  margin-bottom: 20px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  word-wrap: break-word;
+}
+
+.timer {
+  font-size: 4rem;
+  color: #ff6347;
+  font-weight: bold;
+  margin-bottom: 30px;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: #ffe4e1;
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 350px;
+  margin: 20px auto;
+  box-shadow: 0 0 15px rgba(255, 99, 71, 0.5);
+  display: inline-block;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+input[type="number"] {
+  width: 60px;
+  padding: 8px;
+  font-size: 1.3rem;
+  margin: 10px 0;
+  text-align: center;
+  border: 2px solid #ff6347;
+  border-radius: 5px;
+  background-color: #fff;
+  transition: all 0.3s ease;
+  color: #333;
+}
+
+input[type="number"]:disabled {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+  color: #ccc;
+}
+
+input[type="number"]:focus {
+  border-color: #ff4500;
+  outline: none;
+  box-shadow: 0 0 5px rgba(255, 69, 0, 0.5);
+  color: #333;
+}
+
+button {
+  background-color: #ff6347; 
+  color: white;
+  font-size: 1.5rem;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 10px;
+  margin: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-weight: bold;
+  width: 100%;
+}
+
+button:hover {
+  background-color: #e55347;
+  transform: scale(1.05);
+}
+
+button:disabled {
+  background-color: #f0a0a0;
+  cursor: not-allowed;
+}

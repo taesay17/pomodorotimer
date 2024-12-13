@@ -1,47 +1,49 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
 function PomodoroTimer() {
   const [workTime, setWorkTime] = useState(25 * 60); 
   const [breakTime, setBreakTime] = useState(5 * 60); 
-  const [time, setTime] = useState(workTime);
+  const [time, setTime] = useState(workTime); 
   const [isActive, setIsActive] = useState(false); 
-  const [sessionCount, setSessionCount] = useState(0); 
-  const [isBreak, setIsBreak] = useState(false);
-  const [showModal, setShowModal] = useState(false); 
-  const [audioInterval, setAudioInterval] = useState(null);
+  const [sessionCount, setSessionCount] = useState(0);
+  const [isBreak, setIsBreak] = useState(false); 
+  const [showModal, setShowModal] = useState(false);
+  const [audioInterval, setAudioInterval] = useState(null); 
 
+  const intervalRef = useRef(null);
   useEffect(() => {
     if (!isActive) {
-      setTime(isBreak ? breakTime : workTime);
+      return;
     }
-  }, [workTime, breakTime, isBreak, isActive]);
+
+    intervalRef.current = setInterval(() => {
+      setTime(prevTime => {
+        if (prevTime <= 0) {
+          clearInterval(intervalRef.current); 
+          return prevTime;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(intervalRef.current); 
+  }, [isActive]);
 
   useEffect(() => {
-    let interval;
-    if (isActive) {
-      interval = setInterval(() => {
-        setTime(prevTime => prevTime - 1);
-      }, 1000);
-    } else {
-      clearInterval(interval);
-    }
-
     if (time <= 0) {
       if (isBreak) {
-        setIsBreak(false); 
+        setIsBreak(false);
         setSessionCount(prev => prev + 1);
         setTime(workTime);
         showNotification('Break time is over! Time to work!');
       } else {
-        setIsBreak(true); 
+        setIsBreak(true);
         setTime(breakTime);
         showNotification('Work time is over! Time for a break!');
       }
     }
-
-    return () => clearInterval(interval);
-  }, [isActive, time, isBreak, workTime, breakTime]);
+  }, [time, isBreak, workTime, breakTime]);
 
   const showNotification = (message) => {
     if (Notification.permission === 'granted') {
@@ -52,18 +54,17 @@ function PomodoroTimer() {
     const interval = setInterval(() => {
       audio.play();
     }, 1000);
-    
+
     setAudioInterval(interval);
     setShowModal(true);
   };
 
   const handleModalResponse = (response) => {
     setShowModal(false);
-
     if (audioInterval) {
       clearInterval(audioInterval);
     }
-    
+
     if (response === 'confirm') {
       console.log('User confirmed the session ended.');
     } else {
@@ -72,10 +73,10 @@ function PomodoroTimer() {
   };
 
   const handleReset = () => {
-    setTime(workTime);
     setIsActive(false);
+    setTime(workTime); 
     setSessionCount(0);
-    setIsBreak(false);
+    setIsBreak(false); 
   };
 
   const formatTime = (time) => {
@@ -116,12 +117,11 @@ function PomodoroTimer() {
         </label>
       </div>
 
-      <button onClick={() => setIsActive(!isActive)}>
+      <button onClick={() => setIsActive(prev => !prev)}>
         {isActive ? 'Pause' : 'Start'}
       </button>
       <button onClick={handleReset}>Reset</button>
 
-      {/* Модальное окно для подтверждения */}
       {showModal && (
         <div className="modal">
           <div className="modal-content">

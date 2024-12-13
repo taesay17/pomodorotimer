@@ -1,40 +1,48 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
+import TimerDisplay from './components/TimerDisplay';
+import ControlPanel from './components/ControlPanel';
+import useInterval from './hooks/useInterval';
 
 function PomodoroTimer() {
-  const [workTime, setWorkTime] = useState(25 * 60); 
-  const [breakTime, setBreakTime] = useState(5 * 60); 
-  const [time, setTime] = useState(workTime); 
-  const [isActive, setIsActive] = useState(false); 
+  const [workTime, setWorkTime] = useState(25 * 60);
+  const [breakTime, setBreakTime] = useState(5 * 60);
+  const [time, setTime] = useState(workTime);
+  const [isActive, setIsActive] = useState(false);
+  const [isBreak, setIsBreak] = useState(false);
   const [sessionCount, setSessionCount] = useState(0);
-  const [isBreak, setIsBreak] = useState(false); 
   const [showModal, setShowModal] = useState(false);
-  const [audioInterval, setAudioInterval] = useState(null); 
+  const [audioInterval, setAudioInterval] = useState(null); // Состояние для отслеживания интервала музыки
 
-  const intervalRef = useRef(null);
-  useEffect(() => {
-    if (!isActive) {
-      return;
+  const { startInterval, stopInterval } = useInterval(setTime, time);
+
+  const audioRef = useRef(null); // Реф для аудио
+
+  // Функция для отображения уведомлений и воспроизведения звука
+  const showNotification = (message) => {
+    if (Notification.permission === 'granted') {
+      new Notification(message);
     }
 
-    intervalRef.current = setInterval(() => {
-      setTime(prevTime => {
-        if (prevTime <= 0) {
-          clearInterval(intervalRef.current); 
-          return prevTime;
-        }
-        return prevTime - 1;
-      });
-    }, 1000);
+    if (audioRef.current) {
+      audioRef.current.play();
+    }
 
-    return () => clearInterval(intervalRef.current); 
-  }, [isActive]);
+    // Воспроизведение музыки через интервал
+    const interval = setInterval(() => {
+      if (audioRef.current) {
+        audioRef.current.play();
+      }
+    }, 1000); // звуковой сигнал будет повторяться каждую секунду
+
+    setAudioInterval(interval); // Сохраняем интервал, чтобы потом его остановить
+  };
 
   useEffect(() => {
     if (time <= 0) {
       if (isBreak) {
         setIsBreak(false);
-        setSessionCount(prev => prev + 1);
+        setSessionCount((prev) => prev + 1);
         setTime(workTime);
         showNotification('Break time is over! Time to work!');
       } else {
@@ -42,98 +50,109 @@ function PomodoroTimer() {
         setTime(breakTime);
         showNotification('Work time is over! Time for a break!');
       }
+      setShowModal(true); // Показываем модальное окно по окончании времени
     }
   }, [time, isBreak, workTime, breakTime]);
 
-  const showNotification = (message) => {
-    if (Notification.permission === 'granted') {
-      new Notification(message);
-    }
-
-    const audio = new Audio('https://www.soundjay.com/misc/sounds/bell-ringing-04.mp3');
-    const interval = setInterval(() => {
-      audio.play();
-    }, 1000);
-
-    setAudioInterval(interval);
-    setShowModal(true);
-  };
-
-  const handleModalResponse = (response) => {
-    setShowModal(false);
-    if (audioInterval) {
-      clearInterval(audioInterval);
-    }
-
-    if (response === 'confirm') {
-      console.log('User confirmed the session ended.');
-    } else {
-      console.log('User dismissed the session end.');
-    }
-  };
+  useEffect(() => {
+    if (!isActive) return;
+    startInterval();
+    return stopInterval;
+  }, [isActive, startInterval, stopInterval]);
 
   const handleReset = () => {
+    setTime(workTime);
     setIsActive(false);
-    setTime(workTime); 
     setSessionCount(0);
-    setIsBreak(false); 
+    setIsBreak(false);
+    setShowModal(false);
+    clearInterval(audioInterval); // Останавливаем воспроизведение музыки
   };
 
-  const formatTime = (time) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = time % 60;
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  const handleWorkTimeChange = (e) => {
+    let value = e.target.value;
+
+    if (value === "") {
+      setWorkTime(0);
+      setTime(0);
+      return;
+    }
+
+    value = parseInt(value, 10) * 60;
+
+    if (value >= 0) {
+      setWorkTime(value);
+      setTime(value);
+    } else {
+      console.log("Please enter a positive number or zero.");
+    }
   };
 
-  const handleWorkTimeChange = (e) => setWorkTime(e.target.value * 60);
-  const handleBreakTimeChange = (e) => setBreakTime(e.target.value * 60);
+  const handleBreakTimeChange = (e) => {
+    let value = e.target.value;
+
+    if (value === "") {
+      setBreakTime(0);
+      return;
+    }
+
+    value = parseInt(value, 10) * 60;
+
+    if (value >= 0) {
+      setBreakTime(value);
+    } else {
+      console.log("Please enter a positive number or zero.");
+    }
+  };
+
+  const handleContinue = () => {
+    setShowModal(false);
+    setIsActive(true); // Возобновляем работу
+    if (audioInterval) {
+      clearInterval(audioInterval); // Останавливаем текущий интервал звука
+    }
+  };
+
+  const handleStop = () => {
+    setShowModal(false);
+    handleReset(); // Сбрасываем таймер, если пользователь не хочет продолжать
+  };
 
   return (
     <div className="timer-container">
       <h1>Pomodoro Timer</h1>
-      <div className="timer">{formatTime(time)}</div>
+      <TimerDisplay time={time} />
       <div className="sessions">Sessions Completed: {sessionCount}</div>
+      <ControlPanel
+        workTime={workTime}
+        breakTime={breakTime}
+        isActive={isActive}
+        setIsActive={setIsActive}
+        handleWorkTimeChange={handleWorkTimeChange}
+        handleBreakTimeChange={handleBreakTimeChange}
+        handleReset={handleReset}
+      />
 
-      <div>
-        <label>
-          Work Time (minutes): 
-          <input 
-            type="number" 
-            value={workTime / 60} 
-            onChange={handleWorkTimeChange} 
-            disabled={isActive} 
-          />
-        </label>
-      </div>
-      <div>
-        <label>
-          Break Time (minutes): 
-          <input 
-            type="number" 
-            value={breakTime / 60} 
-            onChange={handleBreakTimeChange} 
-            disabled={isActive} 
-          />
-        </label>
-      </div>
-
-      <button onClick={() => setIsActive(prev => !prev)}>
-        {isActive ? 'Pause' : 'Start'}
-      </button>
-      <button onClick={handleReset}>Reset</button>
-
+      {/* Модальное окно с вопросом пользователю */}
       {showModal && (
         <div className="modal">
           <div className="modal-content">
             <h2>Time is up!</h2>
-            <p>Do you want to continue?</p>
-            <button onClick={() => handleModalResponse('confirm')}>Yes</button>
-            <button onClick={() => handleModalResponse('dismiss')}>No</button>
+            <p>Would you like to continue with the next session?</p>
+            <button onClick={handleContinue}>Continue</button>
+            <button onClick={handleStop}>Stop & Reset</button>
           </div>
         </div>
       )}
+
+      {/* Тег аудио для воспроизведения звука */}
+      <audio ref={audioRef} src="https://www.soundjay.com/misc/sounds/bell-ringing-04.mp3" />
     </div>
   );
+
 }
+
+
+
 
 export default PomodoroTimer;

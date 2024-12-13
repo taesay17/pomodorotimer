@@ -9,6 +9,7 @@ function PomodoroTimer() {
   const [sessionCount, setSessionCount] = useState(0); 
   const [isBreak, setIsBreak] = useState(false);
   const [showModal, setShowModal] = useState(false); 
+  const [audioInterval, setAudioInterval] = useState(null);
 
   useEffect(() => {
     if (!isActive) {
@@ -47,14 +48,22 @@ function PomodoroTimer() {
       new Notification(message);
     }
 
-    // const audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
-    // audio.play();
-
+    const audio = new Audio('https://www.soundjay.com/misc/sounds/bell-ringing-04.mp3');
+    const interval = setInterval(() => {
+      audio.play();
+    }, 1000);
+    
+    setAudioInterval(interval);
     setShowModal(true);
   };
 
   const handleModalResponse = (response) => {
     setShowModal(false);
+
+    if (audioInterval) {
+      clearInterval(audioInterval);
+    }
+    
     if (response === 'confirm') {
       console.log('User confirmed the session ended.');
     } else {

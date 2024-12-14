@@ -158,12 +158,11 @@ button.control-btn {
 .modal button:hover {
   background-color: #e55347;
 }
-/* Контейнер для Work Time и Break Time */
 .time-settings {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 20px; /* Расстояние между элементами */
+  gap: 20px; 
   margin-bottom: 20px;
 }
 

@@ -12,13 +12,12 @@ function PomodoroTimer() {
   const [isBreak, setIsBreak] = useState(false);
   const [sessionCount, setSessionCount] = useState(0);
   const [showModal, setShowModal] = useState(false);
-  const [audioInterval, setAudioInterval] = useState(null); // Состояние для отслеживания интервала музыки
+  const [audioInterval, setAudioInterval] = useState(null); 
 
   const { startInterval, stopInterval } = useInterval(setTime, time);
 
-  const audioRef = useRef(null); // Реф для аудио
+  const audioRef = useRef(null); 
 
-  // Функция для отображения уведомлений и воспроизведения звука
   const showNotification = (message) => {
     if (Notification.permission === 'granted') {
       new Notification(message);
@@ -28,14 +27,13 @@ function PomodoroTimer() {
       audioRef.current.play();
     }
 
-    // Воспроизведение музыки через интервал
     const interval = setInterval(() => {
       if (audioRef.current) {
         audioRef.current.play();
       }
-    }, 1000); // звуковой сигнал будет повторяться каждую секунду
+    }, 1000); 
 
-    setAudioInterval(interval); // Сохраняем интервал, чтобы потом его остановить
+    setAudioInterval(interval); 
   };
 
   useEffect(() => {
@@ -50,7 +48,7 @@ function PomodoroTimer() {
         setTime(breakTime);
         showNotification('Work time is over! Time for a break!');
       }
-      setShowModal(true); // Показываем модальное окно по окончании времени
+      setShowModal(true); 
     }
   }, [time, isBreak, workTime, breakTime]);
 
@@ -66,7 +64,7 @@ function PomodoroTimer() {
     setSessionCount(0);
     setIsBreak(false);
     setShowModal(false);
-    clearInterval(audioInterval); // Останавливаем воспроизведение музыки
+    clearInterval(audioInterval); 
   };
 
   const handleWorkTimeChange = (e) => {
@@ -107,15 +105,15 @@ function PomodoroTimer() {
 
   const handleContinue = () => {
     setShowModal(false);
-    setIsActive(true); // Возобновляем работу
+    setIsActive(true); 
     if (audioInterval) {
-      clearInterval(audioInterval); // Останавливаем текущий интервал звука
+      clearInterval(audioInterval);
     }
   };
 
   const handleStop = () => {
     setShowModal(false);
-    handleReset(); // Сбрасываем таймер, если пользователь не хочет продолжать
+    handleReset();
   };
 
   return (
